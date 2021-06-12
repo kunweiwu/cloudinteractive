@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main_navigation"
+    app:startDestination="@id/mainFragment">
+
+    <fragment
+        android:id="@+id/mainFragment"
+        android:name="mason.cloudinteractive.ui.main.MainFragment"
+        android:label="main_fragment"
+        tools:layout="@layout/main_fragment" >
+        <action
+            android:id="@+id/action_mainFragment_to_photosFragment"
+            app:destination="@id/photosFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/photosFragment"
+        android:name="mason.cloudinteractive.ui.photo.PhotosFragment"
+        android:label="photos_fragment"
+        tools:layout="@layout/photos_fragment" >
+        <action
+            android:id="@+id/action_photosFragment_to_photoFragment"
+            app:destination="@id/photoFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/photoFragment"
+        android:name="mason.cloudinteractive.ui.photo.PhotoFragment"
+        android:label="photo_fragment"
+        tools:layout="@layout/photo_fragment" >
+        <argument
+            android:name="photo"
+            app:argType="mason.cloudinteractive.data.model.OnePhoto" />
+    </fragment>
+</navigation>

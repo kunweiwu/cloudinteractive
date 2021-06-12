@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">cloudinteractiveKunweiwu</string>
+    <string name="my_name">Kun-Wei, Wu</string>
+    <string name="btn_main">Request API</string>
+</resources>

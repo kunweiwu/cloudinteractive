@@ -11,17 +11,11 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import mason.cloudinteractive.data.ApiProvider
+import com.squareup.picasso.Picasso
 import mason.cloudinteractive.data.model.OnePhoto
 import mason.cloudinteractive.data.model.Photo
 import mason.cloudinteractive.databinding.ItemPhotoBinding
 import mason.cloudinteractive.databinding.PhotosFragmentBinding
-import mason.cloudinteractive.domain.photo.LoadBitmapUseCase
-import mason.cloudinteractive.result.data
 
 class PhotosFragment : Fragment(), ItemClickCallback<OnePhoto> {
 
@@ -60,15 +54,31 @@ class PhotosFragment : Fragment(), ItemClickCallback<OnePhoto> {
         findNavController().navigate(action)
     }
 
+    inner class MyAdapter(
+        private val clickCallback: ItemClickCallback<OnePhoto>
+    ) :
+        ListAdapter<Photo, PhotoViewHolder>(DiffCallback) {
+
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PhotoViewHolder {
+            val inflater = LayoutInflater.from(parent.context)
+            val binding = ItemPhotoBinding.inflate(inflater, parent, false)
+            return PhotoViewHolder(binding)
+        }
+
+        override fun onBindViewHolder(holder: PhotoViewHolder, position: Int) {
+            holder.bind(getItem(position), clickCallback, viewModel)
+        }
+    }
+
 }
 
 object DiffCallback : DiffUtil.ItemCallback<Photo>() {
     override fun areItemsTheSame(oldItem: Photo, newItem: Photo): Boolean {
-        return oldItem.id == newItem.id
+        return oldItem == newItem
     }
 
     override fun areContentsTheSame(oldItem: Photo, newItem: Photo): Boolean {
-        return oldItem == newItem
+        return oldItem.id == newItem.id
     }
 
 }
@@ -76,46 +86,21 @@ object DiffCallback : DiffUtil.ItemCallback<Photo>() {
 class PhotoViewHolder(private val binding: ItemPhotoBinding) :
     RecyclerView.ViewHolder(binding.root) {
 
-    companion object {
-        val LOADED = "imageLoaded"
-    }
-
-    private val loadBitmapUseCase = LoadBitmapUseCase(ApiProvider.apiService, Dispatchers.IO)
-
-    fun bind(photo: Photo, clickCallback: ItemClickCallback<OnePhoto>) {
+    fun bind(photo: Photo, clickCallback: ItemClickCallback<OnePhoto>, viewModel: PhotosViewModel) {
         binding.let {
             it.id.text = photo.id.toString()
             it.title.text = photo.title
             it.image.setImageBitmap(null)
             it.image.tag = null
-            CoroutineScope(Dispatchers.IO).launch {
-                val bitmap = loadBitmapUseCase(photo.thumbnailUrl).data ?: return@launch
-                withContext(Dispatchers.Main) {
-                    it.image.setImageBitmap(bitmap)
-                    it.image.tag = LOADED
-                }
-            }
+            Picasso.get()
+                .load(photo.thumbnailUrl)
+                .into(it.image)
             it.root.setOnClickListener { _ ->
-                if (it.image.tag != LOADED) return@setOnClickListener
                 val drawable: Drawable = it.image.drawable ?: return@setOnClickListener
                 clickCallback.onClick(OnePhoto(photo.id, photo.title, drawable))
             }
         }
     }
-}
-
-class MyAdapter(private val clickCallback: ItemClickCallback<OnePhoto>) :
-    ListAdapter<Photo, PhotoViewHolder>(DiffCallback) {
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PhotoViewHolder {
-        val inflater = LayoutInflater.from(parent.context)
-        val binding = ItemPhotoBinding.inflate(inflater, parent, false)
-        return PhotoViewHolder(binding)
-    }
-
-    override fun onBindViewHolder(holder: PhotoViewHolder, position: Int) {
-        holder.bind(getItem(position), clickCallback)
-    }
-
 }
 
 interface ItemClickCallback<T> {

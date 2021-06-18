@@ -1,8 +1,7 @@
 package mason.cloudinteractive
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import mason.cloudinteractive.ui.main.MainFragment
+import androidx.appcompat.app.AppCompatActivity
 
 class MainActivity : AppCompatActivity() {
 
